@@ -1,0 +1,31 @@
+HTTP 1.1 server specifications
+------------------------------
+
+
+bin/server <port> <simultaneous client connection limite>
+
+Main http return codes and corresponding messages:
+	200 : ok
+	404 : not found
+	403 : forbidden (permission)
+	
+	
+	
+Example of http 1.1 response :
+
+HTTP/1.1 200 OK
+Content-Type: text/html
+
+<file content>
+
+
+We can find the file type by looking in /etc/mime.type.
+
+The server must implements a log system.
+A log file is name "http<student id>.log" and is located in /tmp.
+Every answered request must create a log entry wich is composed according 
+to the following :
+	<client IP> <date> <server's PID> <involved thread id> <request first line> <return code> <answer file size>
+
+
+
