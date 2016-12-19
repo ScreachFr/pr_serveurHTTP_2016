@@ -81,7 +81,7 @@ void * thread_handleClient(void * args) {
 
 void handleClient(Socket clientSocket) {
 	char buffer[BUFFER_SIZE];
-	char* getString;
+	char* getString, parsedPath;
 	int n;
 	
 	if ((n = read(clientSocket, buffer, sizeof(buffer) - 1)) < 0) {
@@ -92,12 +92,53 @@ void handleClient(Socket clientSocket) {
 	buffer[n] = '\0';
 	getString = buffer;
 	
-	printf("received : %s\n", getString);
+	printf("received :\n%s\n", getString);
 	
+	parsedPath = "";
+	
+	if ((n = parseQuery(getString, parsedPath)) < 0) {
+		printf("Error while parsing query (%d) \n", n);
+		return;
+	}
+	
+		
 }
 
+//TODO check if "HTTP/1.1" is in query
+//TODO check if the path is empty
+int parseQuery(char* query, char* path) {
+	char* result;
+	int i;
+	
+	if (strlen(query) < 4)
+		return -1;
+	
+	if (strncmp(query, "GET ", 4) != 0)
+		return -2;
+	
+	i = 4;
+	result = malloc(sizeof(char));
+	
+	while (query[i] != ' ' && query[i] != '\n' && query[i] != '\0') {
+		result = realloc(result, sizeof(result) + sizeof(char));
+		result[i-4] = query[i];
+		i++;
+	}
+	
+	result[i-3] = '\0';
+	
+	printf("Parsed path : %s\n", result);
+	
+	path = result;
+	
+	return 0;
+}
 
-
+char* createAnswer(int code, char* message) {
+	//TODO
+	
+	return NULL;
+}
 
 
 

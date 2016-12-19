@@ -34,5 +34,5 @@ Socket initServerSocket(int port);
 int connectionHandler(Socket socket);
 void handleClient(Socket clientSocket);
 void * thread_handleClient(void * args);
-
-
+int parseQuery(char* query, char* path);
+char* createAnswer(int code, char* message);
