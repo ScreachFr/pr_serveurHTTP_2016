@@ -1,7 +1,8 @@
 TARGET = bin/test
 
 CC = gcc -fdiagnostics-color=auto
-CFLAGS = -std=gnu99 -Wall -Werror -Wextra -O2 -Wno-incompatible-pointer-types -Wno-unused-value
+LIB = -pthread
+CFLAGS = -std=gnu99 -Wall -Wextra -O2 -Wno-incompatible-pointer-types -Wno-unused-value
 LDFLAGS = -Wno-incompatible-pointer-types
 
 OBJECTS = $(patsubst src/%.c, bin/%.o, $(wildcard src/*.c))
@@ -20,10 +21,10 @@ mkdir:
 	mkdir -p bin
 
 $(TARGET): $(OBJECTS)
-	$(CC) $(LDFLAGS) $^ -o $@
+	$(CC) $(LIB) $(LDFLAGS) $^ -o $@
 
 bin/%.o: src/%.c $(HEADERS)
-	$(CC) $(CFLAGS) -Iinclude -c $< -o $@
+	$(CC) $(LIB) $(CFLAGS) -Iinclude -c $< -o $@
 
 clean:
 	-rm -rf bin

@@ -6,6 +6,6 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <string.h>
-
+#include "common.h"
 
 int appendLog(char* fname, char* content);

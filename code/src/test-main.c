@@ -3,13 +3,21 @@
 #include "../include/logger.h"
 #include "../include/server.h"
 
-int main() {
+int main(int argc, char** argv) {
+	if (argc < 2){
+		printf("too few args\n");
+		return EXIT_FAILURE;
+	}
+	
+	int port = atoi(argv[1]);
 	Socket s;
 	
 	
-	s = initServerSocket(90);
+	s = initServerSocket(port);
 	
 	printf("s : %d\n", s);
+	
+	connectionHandler(s);
 	
 	return EXIT_SUCCESS;
 }
