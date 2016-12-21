@@ -63,7 +63,7 @@ int connectionHandler(Socket socket) {
 			return EXIT_FAILURE;
 		}
 		
-		//handleClient(clientSocket);	
+		handleClient(clientSocket);	
 	}
 	
 	return EXIT_SUCCESS;
@@ -83,7 +83,11 @@ void handleClient(Socket clientSocket) {
 	char buffer[BUFFER_SIZE];
 	char* getString, parsedPath;
 	int n;
+	char* answer;
+	char test[] = "ok";
 	
+	
+
 	if ((n = read(clientSocket, buffer, sizeof(buffer) - 1)) < 0) {
 		perror("read()");
 		exit(errno);
@@ -94,53 +98,88 @@ void handleClient(Socket clientSocket) {
 	
 	printf("received :\n%s\n", getString);
 	
-	parsedPath = "";
+	//TODO Fix me ! : the return value is always NULL even when the parsing is successfull.
+	parsedPath = parseQuery(getString);
+	printf("parsedPath : %s\n", parsedPath);
 	
-	if ((n = parseQuery(getString, parsedPath)) < 0) {
-		printf("Error while parsing query (%d) \n", n);
+	if (parsedPath == NULL) {
+		printf("Error while parsing query %s\n", getString);
+		answer = getHTTP_BAD_REQUEST();
+		
+		if (sendString(clientSocket, answer) < 0);
+			printf("Error while sending answer to client");
+		
 		return;
 	}
 	
-		
+	answer = getHTTP_OK();
+	if (sendString(clientSocket, answer) < 0);
+		printf("Error while sending answer to client");	
+	
+	shutdown(clientSocket, 2);
+	close(clientSocket);
 }
 
-//TODO check if "HTTP/1.1" is in query
-//TODO check if the path is empty
-int parseQuery(char* query, char* path) {
-	char* result;
-	int i;
-	
-	if (strlen(query) < 4)
+int sendString(Socket s, const char* toWrite) {
+	/*
+	if (write(socket, toWrite, sizeof(toWrite)) == -1) {
+		perror("write"); 
 		return -1;
-	
-	if (strncmp(query, "GET ", 4) != 0)
-		return -2;
-	
-	i = 4;
-	result = malloc(sizeof(char));
-	
-	while (query[i] != ' ' && query[i] != '\n' && query[i] != '\0') {
-		result = realloc(result, sizeof(result) + sizeof(char));
-		result[i-4] = query[i];
-		i++;
 	}
-	
-	result[i-3] = '\0';
-	
-	printf("Parsed path : %s\n", result);
-	
-	path = result;
-	
+	*/	
 	return 0;
 }
 
-char* createAnswer(int code, char* message) {
-	//TODO
+char* parseQuery(char* query) {
+	char* path;
+	char** lines;
+	char** GETLine;
+	int lineSize, getLineSize;
 	
-	return NULL;
+	lines = tokenize(query, HTTP_HEADER_LINE_DELIM, &lineSize);
+	
+	if (lineSize <= 0)
+		return NULL;
+	printf("line size ok\n");
+	GETLine = tokenize(lines[0], HTTP_ARGS_DELIM, &getLineSize);
+	
+	if (getLineSize != 3)
+		return NULL;	
+	printf("get size ok\n");
+	
+	if (strlen(GETLine[0]) != HTTP_GET_SIZE && strncmp(GETLine[0], HTTP_GET, HTTP_GET_SIZE) != 0)
+		return NULL;
+	printf("GET ok\n");
+	if (strlen(GETLine[2]) != HTTP_VERSION_SIZE && strncmp(GETLine[2], HTTP_VERSION, HTTP_VERSION_SIZE) != 0)
+		return NULL;
+	printf("VERSION ok\n");
+	
+	path = malloc(sizeof(GETLine[1]));
+	
+	copyString(GETLine[1], path);
+	
+	free(lines);
+	free(GETLine);
+	
+	printf("path : %s\n", path);
+	return path; 
 }
 
-
+char* createAnswer(char* code, char* message) {
+	char* result;
+	//+2 for spaces	
+	result = malloc(sizeof(HTTP_VERSION) + sizeof(code) + sizeof(message) + (2 * sizeof(char)));
+	
+	concatString(result, HTTP_VERSION);
+	concatString(result, " ");
+	concatString(result, code);
+	concatString(result, " ");
+	concatString(result, message);
+	
+	
+	
+	return result;
+}
 
 
 

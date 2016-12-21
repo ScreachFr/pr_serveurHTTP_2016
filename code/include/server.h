@@ -14,6 +14,7 @@
 
 #include "logger.h"
 #include "common.h"
+#include "utils.h"
 
 #define BUFFER_SIZE 1024
 
@@ -21,6 +22,28 @@
 #define SOCKET_ERROR -1
 
 #define SIMU_CONNECTIONS 5
+
+#define HTTP_HEADER_LINE_DELIM "\n"
+#define HTTP_ARGS_DELIM " "
+#define HTTP_GET "GET"
+#define HTTP_GET_SIZE 3
+#define HTTP_VERSION "HTTP/1.1"
+#define HTTP_VERSION_SIZE 8
+
+#define HTTP_OK "200"
+#define HTTP_OK_MSG "OK"
+
+#define HTTP_BAD_REQUEST "400"
+#define HTTP_BAD_REQUEST_MSG "Bad request"
+#define HTTP_NOT_FOUND "404"
+#define HTTP_NOT_FOUND_MSG "Not found"
+#define HTTP_FORBIDDEN "403"
+#define HTTP_FORBIDDEN_MSG "Forbidden"
+
+#define getHTTP_OK() createAnswer(HTTP_OK, HTTP_OK_MSG)
+#define getHTTP_BAD_REQUEST() createAnswer(HTTP_BAD_REQUEST, HTTP_BAD_REQUEST_MSG)
+#define getHTTP_NOT_FOUND() createAnswer(HTTP_NOT_FOUND, HTTP_NOT_FOUND)
+
 
 typedef int Socket;
 typedef struct sockaddr Sockaddr;
@@ -34,5 +57,25 @@ Socket initServerSocket(int port);
 int connectionHandler(Socket socket);
 void handleClient(Socket clientSocket);
 void * thread_handleClient(void * args);
-int parseQuery(char* query, char* path);
-char* createAnswer(int code, char* message);
+char* parseQuery(char* query);
+char* createAnswer(char* code, char* message);
+int sendString(Socket s, const char* toWrite);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
