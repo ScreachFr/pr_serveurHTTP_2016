@@ -27,7 +27,6 @@ int main(int argc, char** argv) {
 	
 	printf("Parsed path : %s\n", path);
 	*/
-	
 	return EXIT_SUCCESS;
 }
 

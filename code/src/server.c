@@ -81,7 +81,8 @@ void * thread_handleClient(void * args) {
 
 void handleClient(Socket clientSocket) {
 	char buffer[BUFFER_SIZE];
-	char* getString, parsedPath;
+	char* getString;
+	char* parsedPath;
 	int n;
 	char* answer;
 	char test[] = "ok";
@@ -98,7 +99,6 @@ void handleClient(Socket clientSocket) {
 	
 	printf("received :\n%s\n", getString);
 	
-	//TODO Fix me ! : the return value is always NULL even when the parsing is successfull.
 	parsedPath = parseQuery(getString);
 	printf("parsedPath : %s\n", parsedPath);
 	
@@ -106,14 +106,14 @@ void handleClient(Socket clientSocket) {
 		printf("Error while parsing query %s\n", getString);
 		answer = getHTTP_BAD_REQUEST();
 		
-		if (sendString(clientSocket, answer) < 0);
+		if (sendString(clientSocket, answer) < 0)
 			printf("Error while sending answer to client");
 		
 		return;
 	}
 	
 	answer = getHTTP_OK();
-	if (sendString(clientSocket, answer) < 0);
+	if (sendString(clientSocket, answer) < 0)
 		printf("Error while sending answer to client");	
 	
 	shutdown(clientSocket, 2);
