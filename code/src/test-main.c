@@ -27,6 +27,39 @@ int main(int argc, char** argv) {
 	
 	printf("Parsed path : %s\n", path);
 	*/
+	/*
+	char* result;
+	
+	result = getFile("/");
+
+	printf("result : %s\n", result);
+	*/
+	/*
+	char* test;
+	
+	test = realloc(NULL, sizeof("test"));
+	copyString("test", test);
+	printf("%s\n", test);
+	
+	test = realloc(test, sizeof("test") + sizeof("test2"));
+	concatString(test, "test2");
+	printf("%s\n", test);
+	*/
+	/*
+	char* fileContent = getFile("/");	
+	char* answer = createAnswer("200", "test");
+	
+	answer = addArgToAnswer(answer, "test", "lol");
+	answer = addArgToAnswer(answer, "test2", "lol");
+	answer = addArgToAnswer(answer, "test3", "lol");
+	answer = addArgToAnswer(answer, "test4", "lol");
+	answer = addArgToAnswer(answer, "test5", "lol");
+	answer = addArgToAnswer(answer, "test6", "lol");
+	answer = addFileToAnswer(answer, fileContent);
+	
+	printf("%s\n", answer);
+	*/
+	
 	return EXIT_SUCCESS;
 }
 

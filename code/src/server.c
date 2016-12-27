@@ -32,7 +32,7 @@ Socket initServerSocket(int port) {
  * 
  */
 int connectionHandler(Socket socket) {
-	Sockaddr_in csin = { 0 };
+	Sockaddr_in csin;
 	Socket clientSocket;
 	int sinSize = sizeof(csin);
 	
@@ -63,7 +63,7 @@ int connectionHandler(Socket socket) {
 			return EXIT_FAILURE;
 		}
 		
-		handleClient(clientSocket);	
+		//handleClient(clientSocket);	
 	}
 	
 	return EXIT_SUCCESS;
@@ -85,8 +85,7 @@ void handleClient(Socket clientSocket) {
 	char* parsedPath;
 	int n;
 	char* answer;
-	char test[] = "ok";
-	
+	char* requestedFile;
 	
 
 	if ((n = read(clientSocket, buffer, sizeof(buffer) - 1)) < 0) {
@@ -104,7 +103,7 @@ void handleClient(Socket clientSocket) {
 	
 	if (parsedPath == NULL) {
 		printf("Error while parsing query %s\n", getString);
-		answer = getHTTP_BAD_REQUEST();
+		//answer = getHTTP_BAD_REQUEST();
 		
 		if (sendString(clientSocket, answer) < 0)
 			printf("Error while sending answer to client");
@@ -112,21 +111,37 @@ void handleClient(Socket clientSocket) {
 		return;
 	}
 	
-	answer = getHTTP_OK();
+	requestedFile = getFile(parsedPath);
+	
+	
+	if (requestedFile < 0) {
+		if (requestedFile == -1)
+			answer = getHTTP_BAD_REQUEST();
+		else
+			answer = getHTTP_NOT_FOUND();
+	} else {
+		answer = getHTTP_OK();
+		//answer = addArgToAnswer(answer, HTTP_ARG_CONTENT_TYPE, HTTP_ARG_TEXT_HTML);	
+		answer = addFileToAnswer(answer, requestedFile);
+		//printf("requestedFile : \n%s\n", requestedFile);
+	}
+	
 	if (sendString(clientSocket, answer) < 0)
 		printf("Error while sending answer to client");	
 	
-	shutdown(clientSocket, 2);
-	close(clientSocket);
+	//shutdown(clientSocket, 2);
+	//close(clientSocket);
+	printf("done\n");
 }
 
-int sendString(Socket s, const char* toWrite) {
+int sendString(Socket s, char* toWrite) {
+	printf("answer : %s\n", toWrite);
 	/*
 	if (write(socket, toWrite, sizeof(toWrite)) == -1) {
 		perror("write"); 
 		return -1;
 	}
-	*/	
+	*/
 	return 0;
 }
 
@@ -140,26 +155,22 @@ char* parseQuery(char* query) {
 	
 	if (lineSize <= 0)
 		return NULL;
-	printf("line size ok\n");
 	GETLine = tokenize(lines[0], HTTP_ARGS_DELIM, &getLineSize);
 	
 	if (getLineSize != 3)
 		return NULL;	
-	printf("get size ok\n");
 	
 	if (strlen(GETLine[0]) != HTTP_GET_SIZE && strncmp(GETLine[0], HTTP_GET, HTTP_GET_SIZE) != 0)
 		return NULL;
-	printf("GET ok\n");
 	if (strlen(GETLine[2]) != HTTP_VERSION_SIZE && strncmp(GETLine[2], HTTP_VERSION, HTTP_VERSION_SIZE) != 0)
 		return NULL;
-	printf("VERSION ok\n");
 	
-	path = malloc(sizeof(GETLine[1]));
+	path = malloc(strlen(GETLine[1]) * sizeof(char));
 	
 	copyString(GETLine[1], path);
 	
-	free(lines);
-	free(GETLine);
+	//free(lines);
+	//free(GETLine);
 	
 	printf("path : %s\n", path);
 	return path; 
@@ -167,23 +178,95 @@ char* parseQuery(char* query) {
 
 char* createAnswer(char* code, char* message) {
 	char* result;
-	//+2 for spaces	
-	result = malloc(sizeof(HTTP_VERSION) + sizeof(code) + sizeof(message) + (2 * sizeof(char)));
-	
-	concatString(result, HTTP_VERSION);
-	concatString(result, " ");
-	concatString(result, code);
-	concatString(result, " ");
-	concatString(result, message);
-	
-	
+	int size = (strlen(HTTP_VERSION) + strlen(code) + strlen(message) + 3) * sizeof(char);
+	result = malloc(size);
+	//clearArray(result, size);
+	strcat(result, HTTP_VERSION);
+	strcat(result, " ");
+	strcat(result, code);
+	strcat(result, " ");
+	strcat(result, message);
 	
 	return result;
 }
 
+char* addArgToAnswer(char* answer, char* argName, char* argValue) {
+	answer = realloc(answer, (strlen(answer) + strlen(argName) + strlen(argValue) + 3) * sizeof(char));
+	strcat(answer, "\n");
+	strcat(answer, argName);
+	strcat(answer, ": ");
+	strcat(answer, argValue);
+	
+	return answer;
+}
 
+char* addFileToAnswer(char* answer, char* fileContent) {
+	answer = realloc(answer, (strlen(answer) + 2 + strlen(fileContent)) * sizeof(char));
+	strcat(answer, "\n");
+	strcat(answer, fileContent);
 
+	return answer;
+}
 
+char* getFile(char* path) {
+	char finalPath[PATH_BUFFER_SIZE];
+	char* result;
+	int fd;
+	struct stat statbuf;
+	int size;
+	int n;
+	
+	
+	//create public html path
+	clearArray(finalPath, PATH_BUFFER_SIZE);
+	strcat(finalPath, getenv("HOME"));
+	strcat(finalPath, PUBLIC_HTML);
+	strcat(finalPath, path);
+	
+	//file exists ?	
+	if (access(finalPath, F_OK) < 0) {
+		printf("Requested file does not exist.\n");
+		return (char*)-2;
+	}	
+	
+	if(stat(finalPath, &statbuf) == -1){
+		perror("stat");
+		return (char*)-1;
+	}
+	
+	//is finalPath a directory ?
+	if (S_ISDIR(statbuf.st_mode)) { 
+		strcat(finalPath, DEFAULT_FILE_NAME);
+		
+		if (access(finalPath, F_OK) < 0) {
+			printf("Requested file does not exist.\n");
+			return (char*)-2;
+		}	
+	} 
+	
+	fd = open(finalPath, O_RDONLY, S_IRUSR);	
+
+	if (fd < 0) {
+		perror("Error while opening file ");
+		return (char*)-1;
+	}
+	
+	if(stat(finalPath, &statbuf) == -1){
+		perror("stat");
+		return (char*)-1;
+	}
+	size = statbuf.st_size + 1;
+	result = malloc(size);
+	
+	if ((n = read(fd, result, size-1)) < 0) {
+		perror("read()");
+		return (char*)-1;
+	}
+	
+	result[size] = '\0';
+	
+	return result;
+}
 
 
 

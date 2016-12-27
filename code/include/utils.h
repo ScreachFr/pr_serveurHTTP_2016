@@ -7,3 +7,4 @@
 void copyString(char* src, char* dest);
 char** tokenize(char* toTokenize, char* delimiters, int * resultSize);
 void concatString(char* dest, char* toConcat);
+void clearArray(char* array, int size);

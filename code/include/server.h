@@ -17,6 +17,7 @@
 #include "utils.h"
 
 #define BUFFER_SIZE 1024
+#define PATH_BUFFER_SIZE 256
 
 #define INVALID_SOCKET -1
 #define SOCKET_ERROR -1
@@ -44,6 +45,12 @@
 #define getHTTP_BAD_REQUEST() createAnswer(HTTP_BAD_REQUEST, HTTP_BAD_REQUEST_MSG)
 #define getHTTP_NOT_FOUND() createAnswer(HTTP_NOT_FOUND, HTTP_NOT_FOUND)
 
+#define HTTP_ARG_CONTENT_TYPE "Content-Type"
+#define HTTP_ARG_TEXT_HTML "text/html"
+
+#define PUBLIC_HTML "/public_html/"
+#define DEFAULT_FILE_NAME "index.html"
+
 
 typedef int Socket;
 typedef struct sockaddr Sockaddr;
@@ -59,10 +66,10 @@ void handleClient(Socket clientSocket);
 void * thread_handleClient(void * args);
 char* parseQuery(char* query);
 char* createAnswer(char* code, char* message);
-int sendString(Socket s, const char* toWrite);
-
-
-
+char* addArgToAnswer(char* answer, char* argName, char* argValue);
+char* addFileToAnswer(char* answer, char* fileContent);
+char* getFile(char* path);
+int sendString(Socket s, char* toWrite);
 
 
 

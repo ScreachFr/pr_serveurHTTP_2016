@@ -52,3 +52,13 @@ void concatString(char* dest, char* toConcat) {
 	*dest = '\0';
 	
 }
+
+void clearArray(char* array, int size) {
+	int i;
+	
+	for (i = 0; i < size; i++) 
+		array[i] = NULL;
+}
+
+
+
