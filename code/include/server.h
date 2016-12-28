@@ -43,7 +43,7 @@
 
 #define getHTTP_OK() createAnswer(HTTP_OK, HTTP_OK_MSG)
 #define getHTTP_BAD_REQUEST() createAnswer(HTTP_BAD_REQUEST, HTTP_BAD_REQUEST_MSG)
-#define getHTTP_NOT_FOUND() createAnswer(HTTP_NOT_FOUND, HTTP_NOT_FOUND)
+#define getHTTP_NOT_FOUND() createAnswer(HTTP_NOT_FOUND, HTTP_NOT_FOUND_MSG)
 
 #define HTTP_ARG_CONTENT_TYPE "Content-Type"
 #define HTTP_ARG_TEXT_HTML "text/html"
@@ -58,17 +58,18 @@ typedef struct sockaddr_in Sockaddr_in;
 
 struct HandleClientArgs {
 	Socket clientSocket;
+	int id;
 };
 
 Socket initServerSocket(int port);
 int connectionHandler(Socket socket);
-void handleClient(Socket clientSocket);
+void handleClient(Socket clientSocket, int threadID);
 void * thread_handleClient(void * args);
 char* parseQuery(char* query);
 char* createAnswer(char* code, char* message);
 char* addArgToAnswer(char* answer, char* argName, char* argValue);
 char* addFileToAnswer(char* answer, char* fileContent);
-char* getFile(char* path);
+char* getFile(char* path, int* errcode);
 int sendString(Socket s, char* toWrite);
 
 

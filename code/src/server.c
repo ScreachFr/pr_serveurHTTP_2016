@@ -35,7 +35,7 @@ int connectionHandler(Socket socket) {
 	Sockaddr_in csin;
 	Socket clientSocket;
 	int sinSize = sizeof(csin);
-	
+	int threadID = 0;
 	struct HandleClientArgs * args;
 	pthread_t * thread;
 	
@@ -47,7 +47,7 @@ int connectionHandler(Socket socket) {
 
 	
 	while (TRUE) {
-		if ((clientSocket = accept(socket, (Sockaddr *)&csin, &sinSize))< -1) {
+		if ((clientSocket = accept(socket, (Sockaddr *)&csin, &sinSize)) < -1) {
 			perror("accept()");
 			exit(3);
 		}
@@ -57,6 +57,7 @@ int connectionHandler(Socket socket) {
 		args = malloc(sizeof(struct HandleClientArgs));
 		thread = malloc(sizeof(pthread_t));
 		args->clientSocket = clientSocket;
+		args->id = threadID++;
 		
 		if (pthread_create(thread, NULL, thread_handleClient, args)) {
 			perror("Error while creating thread");
@@ -72,21 +73,21 @@ int connectionHandler(Socket socket) {
 void * thread_handleClient(void * args) {
 	struct HandleClientArgs * arguments = (struct HandleClientArgs *) args;
 	Socket clientSocket = arguments->clientSocket;
-	
-	handleClient(clientSocket);
+	int id = arguments->id;
+	handleClient(clientSocket, id);
 	
 	pthread_exit(NULL);
 	return NULL;
 }
 
-void handleClient(Socket clientSocket) {
+void handleClient(Socket clientSocket, int threadID) {
 	char buffer[BUFFER_SIZE];
 	char* getString;
 	char* parsedPath;
 	int n;
-	char* answer;
+	char* answer = "";
 	char* requestedFile;
-	
+	int errcode = 0;
 
 	if ((n = read(clientSocket, buffer, sizeof(buffer) - 1)) < 0) {
 		perror("read()");
@@ -103,45 +104,52 @@ void handleClient(Socket clientSocket) {
 	
 	if (parsedPath == NULL) {
 		printf("Error while parsing query %s\n", getString);
-		//answer = getHTTP_BAD_REQUEST();
+		answer = getHTTP_BAD_REQUEST();
 		
 		if (sendString(clientSocket, answer) < 0)
 			printf("Error while sending answer to client");
 		
+		
+		shutdown(clientSocket, 2);
+		close(clientSocket);
+		printf("done\n");
+		
 		return;
 	}
 	
-	requestedFile = getFile(parsedPath);
+	requestedFile = getFile(parsedPath, &errcode);
 	
 	
-	if (requestedFile < 0) {
-		if (requestedFile == -1)
+	if (requestedFile == NULL) {
+		printf("Can't open requested file\n");
+		if (errcode == -1)
 			answer = getHTTP_BAD_REQUEST();
 		else
 			answer = getHTTP_NOT_FOUND();
 	} else {
 		answer = getHTTP_OK();
-		//answer = addArgToAnswer(answer, HTTP_ARG_CONTENT_TYPE, HTTP_ARG_TEXT_HTML);	
+		answer = addArgToAnswer(answer, HTTP_ARG_CONTENT_TYPE, HTTP_ARG_TEXT_HTML);	
 		answer = addFileToAnswer(answer, requestedFile);
-		//printf("requestedFile : \n%s\n", requestedFile);
 	}
+	
+	printf("generated answer : %s\n", answer);
 	
 	if (sendString(clientSocket, answer) < 0)
 		printf("Error while sending answer to client");	
 	
-	//shutdown(clientSocket, 2);
-	//close(clientSocket);
+	shutdown(clientSocket, 2);
+	close(clientSocket);
 	printf("done\n");
 }
 
 int sendString(Socket s, char* toWrite) {
 	printf("answer : %s\n", toWrite);
-	/*
-	if (write(socket, toWrite, sizeof(toWrite)) == -1) {
-		perror("write"); 
+	
+	if (send(s, toWrite, strlen(toWrite) * sizeof(char), 0) < 0) {
+		perror("send");
 		return -1;
 	}
-	*/
+	
 	return 0;
 }
 
@@ -208,7 +216,7 @@ char* addFileToAnswer(char* answer, char* fileContent) {
 	return answer;
 }
 
-char* getFile(char* path) {
+char* getFile(char* path, int* errcode) {
 	char finalPath[PATH_BUFFER_SIZE];
 	char* result;
 	int fd;
@@ -225,13 +233,15 @@ char* getFile(char* path) {
 	
 	//file exists ?	
 	if (access(finalPath, F_OK) < 0) {
-		printf("Requested file does not exist.\n");
-		return (char*)-2;
+		printf("Requested file does not exist. 1 \n");
+		*errcode = 2;
+		return NULL;
 	}	
 	
 	if(stat(finalPath, &statbuf) == -1){
 		perror("stat");
-		return (char*)-1;
+		*errcode = 1;
+		return NULL;
 	}
 	
 	//is finalPath a directory ?
@@ -239,8 +249,9 @@ char* getFile(char* path) {
 		strcat(finalPath, DEFAULT_FILE_NAME);
 		
 		if (access(finalPath, F_OK) < 0) {
-			printf("Requested file does not exist.\n");
-			return (char*)-2;
+			printf("Requested file does not exist. 1\n");
+			*errcode = 2;
+			return NULL;
 		}	
 	} 
 	
@@ -248,19 +259,22 @@ char* getFile(char* path) {
 
 	if (fd < 0) {
 		perror("Error while opening file ");
-		return (char*)-1;
+		*errcode = 1;
+		return NULL;
 	}
 	
 	if(stat(finalPath, &statbuf) == -1){
 		perror("stat");
-		return (char*)-1;
+		*errcode = 1;
+		return NULL;
 	}
 	size = statbuf.st_size + 1;
 	result = malloc(size);
 	
 	if ((n = read(fd, result, size-1)) < 0) {
 		perror("read()");
-		return (char*)-1;
+		*errcode = 1;
+		return NULL;
 	}
 	
 	result[size] = '\0';
