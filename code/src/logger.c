@@ -1,21 +1,25 @@
 #include "../include/logger.h"
 
 int appendLog(char* fname, char* content) {
+	pthread_mutex_lock(&logLock);
 	int fd;
 	
 	fd = open(fname, O_WRONLY|O_CREAT|O_APPEND, 0600);	
 	
 	if (fd < 0) {
+		pthread_mutex_unlock(&logLock);
 		perror("Error while opening file ");
 		return -1;
 	}
 	
 	
 	if (write(fd, content, strlen(content)) < 0) {
+		pthread_mutex_unlock(&logLock);
 		perror("Error while writing in the file ");
 		return -1;
 	}
 	
+	pthread_mutex_unlock(&logLock);
 	return 0;
 	
 }
@@ -55,3 +59,24 @@ int writeRequestLog(char* clientIP,char* date, char* serverPID,
 	
 	return appendLog(DEFAULT_LOG_PATH, toWrite);
 }
+
+
+int initLog() {
+	if (pthread_mutex_init(&logLock, NULL) != 0) {
+        printf("mutex init failed\n");
+        return 1;
+    }
+    
+	return 0;
+}
+
+
+
+
+
+
+
+
+
+
+

@@ -39,6 +39,13 @@ int connectionHandler(Socket socket) {
 	struct HandleClientArgs * args;
 	pthread_t * thread;
 	
+	if (initLog() < 0){
+		printf("Log initialization failed\n");
+		return EXIT_FAILURE;
+	} else {
+		printf("Log initialization successful\n");
+	}
+	
 	//Simultaneous connection limit. 	
 	if (listen(socket, SIMU_CONNECTIONS) == SOCKET_ERROR) {
 		perror("listen()");

@@ -11,6 +11,10 @@
 
 #define DEFAULT_LOG_PATH "/tmp/http3502305.log"
 
+pthread_mutex_t logLock;
+
 int appendLog(char* fname, char* content);
 int writeRequestLog(char* clientIP,char* date, char* serverPID,
 		char* threadID, char* request, char* returnCode, char* resultSize);
+
+int initLog();
