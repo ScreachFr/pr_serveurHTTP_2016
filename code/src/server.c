@@ -57,6 +57,7 @@ int connectionHandler(Socket socket) {
 		args = malloc(sizeof(struct HandleClientArgs));
 		thread = malloc(sizeof(pthread_t));
 		args->clientSocket = clientSocket;
+		args->clientInfo = csin;
 		args->id = threadID++;
 		
 		if (pthread_create(thread, NULL, thread_handleClient, args)) {
@@ -73,14 +74,15 @@ int connectionHandler(Socket socket) {
 void * thread_handleClient(void * args) {
 	struct HandleClientArgs * arguments = (struct HandleClientArgs *) args;
 	Socket clientSocket = arguments->clientSocket;
+	Sockaddr_in clientInfo = arguments->clientInfo;
 	int id = arguments->id;
-	handleClient(clientSocket, id);
+	handleClient(clientSocket, clientInfo, id);
 	
 	pthread_exit(NULL);
 	return NULL;
 }
 
-void handleClient(Socket clientSocket, int threadID) {
+void handleClient(Socket clientSocket, Sockaddr_in clientInfo, int threadID) {
 	char buffer[BUFFER_SIZE];
 	char* getString;
 	char* parsedPath;
@@ -88,25 +90,29 @@ void handleClient(Socket clientSocket, int threadID) {
 	char* answer = "";
 	char* requestedFile;
 	int errcode = 0;
+    char request[REQUEST_BUFFER_SIZE];
+    struct in_addr clientAddress = clientInfo.sin_addr;
+    
+	printf("Thread #%d launched.\n", threadID);
 
 	if ((n = read(clientSocket, buffer, sizeof(buffer) - 1)) < 0) {
 		perror("read()");
 		exit(errno);
 	}
-
+	
 	buffer[n] = '\0';
 	getString = buffer;
 	
 	printf("received :\n%s\n", getString);
 	
-	parsedPath = parseQuery(getString);
+	parsedPath = parseQuery(getString, &request);
 	printf("parsedPath : %s\n", parsedPath);
 	
 	if (parsedPath == NULL) {
 		printf("Error while parsing query %s\n", getString);
 		answer = getHTTP_BAD_REQUEST();
 		
-		if (sendString(clientSocket, answer) < 0)
+		if (sendString(clientSocket, answer, HTTP_BAD_REQUEST, threadID, 0, request, clientAddress) < 0)
 			printf("Error while sending answer to client");
 		
 		
@@ -122,38 +128,60 @@ void handleClient(Socket clientSocket, int threadID) {
 	
 	if (requestedFile == NULL) {
 		printf("Can't open requested file\n");
-		if (errcode == -1)
+		if (errcode == -1) {
 			answer = getHTTP_BAD_REQUEST();
-		else
+			if (sendString(clientSocket, answer, HTTP_BAD_REQUEST, threadID, 0, request, clientAddress) < 0)
+				printf("Error while sending answer to client");	
+		} else{
 			answer = getHTTP_NOT_FOUND();
+			if (sendString(clientSocket, answer, HTTP_NOT_FOUND, threadID, 0, request, clientAddress) < 0)
+				printf("Error while sending answer to client");			
+		}
 	} else {
 		answer = getHTTP_OK();
 		answer = addArgToAnswer(answer, HTTP_ARG_CONTENT_TYPE, HTTP_ARG_TEXT_HTML);	
 		answer = addFileToAnswer(answer, requestedFile);
+		
+		if (sendString(clientSocket, answer, HTTP_OK, threadID, strlen(requestedFile), request, clientAddress) < 0)
+			printf("Error while sending answer to client");	
 	}
 	
 	printf("generated answer : %s\n", answer);
 	
-	if (sendString(clientSocket, answer) < 0)
-		printf("Error while sending answer to client");	
 	
 	shutdown(clientSocket, 2);
 	close(clientSocket);
 	printf("done\n");
 }
 
-int sendString(Socket s, char* toWrite) {
-	printf("answer : %s\n", toWrite);
+int sendString(Socket s, char* toWrite, char* returnCode, int threadID, 
+		int resultSize, char* request, struct in_addr clientAddress) {
+
+	time_t result = time(NULL);
+    char* time = asctime(gmtime(&result));
+	char pid[5];
+    char threadID_str[15];	
+	char resultSize_str[15];
+	char* ip;
 	
+	sprintf(pid, "%d", getpid());
+    sprintf(threadID_str, "%d", threadID);
+    sprintf(resultSize_str, "%d", resultSize);
+	ip = inet_ntoa(clientAddress);
+	
+	printf("answer : %s\n", toWrite);
 	if (send(s, toWrite, strlen(toWrite) * sizeof(char), 0) < 0) {
 		perror("send");
 		return -1;
 	}
 	
+	writeRequestLog(ip, time, &pid, &threadID_str, request, returnCode, &resultSize_str);
+	
+	
 	return 0;
 }
 
-char* parseQuery(char* query) {
+char* parseQuery(char* query, char* request) {
 	char* path;
 	char** lines;
 	char** GETLine;
@@ -176,7 +204,7 @@ char* parseQuery(char* query) {
 	path = malloc(strlen(GETLine[1]) * sizeof(char));
 	
 	copyString(GETLine[1], path);
-	
+	copyString(lines[0], request);
 	//free(lines);
 	//free(GETLine);
 	

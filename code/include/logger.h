@@ -7,5 +7,10 @@
 #include <errno.h>
 #include <string.h>
 #include "common.h"
+#include "utils.h"
+
+#define DEFAULT_LOG_PATH "/tmp/http3502305.log"
 
 int appendLog(char* fname, char* content);
+int writeRequestLog(char* clientIP,char* date, char* serverPID,
+		char* threadID, char* request, char* returnCode, char* resultSize);

@@ -59,7 +59,19 @@ int main(int argc, char** argv) {
 	
 	printf("%s\n", answer);
 	*/
-	
+	/*
+	time_t result = time(NULL);
+    char* time = asctime(gmtime(&result));
+    char pid[5];
+    char threadID[15];
+    char* request = "GET / HTTP/1.1";
+    char resultSize[15];
+    sprintf(pid, "%d", getpid());
+    sprintf(threadID, "%d", 25);
+    sprintf(resultSize, "%d", 256);
+    
+	writeRequestLog("localhost", time, &pid, &threadID, request, HTTP_OK, &resultSize);
+	*/
 	return EXIT_SUCCESS;
 }
 

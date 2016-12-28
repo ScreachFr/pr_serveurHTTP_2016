@@ -18,6 +18,7 @@
 
 #define BUFFER_SIZE 1024
 #define PATH_BUFFER_SIZE 256
+#define REQUEST_BUFFER_SIZE 256
 
 #define INVALID_SOCKET -1
 #define SOCKET_ERROR -1
@@ -58,19 +59,20 @@ typedef struct sockaddr_in Sockaddr_in;
 
 struct HandleClientArgs {
 	Socket clientSocket;
+	Sockaddr_in clientInfo;
 	int id;
 };
 
 Socket initServerSocket(int port);
 int connectionHandler(Socket socket);
-void handleClient(Socket clientSocket, int threadID);
+void handleClient(Socket clientSocket, Sockaddr_in clientInfo, int threadID);
 void * thread_handleClient(void * args);
-char* parseQuery(char* query);
+char* parseQuery(char* query, char* request);
 char* createAnswer(char* code, char* message);
 char* addArgToAnswer(char* answer, char* argName, char* argValue);
 char* addFileToAnswer(char* answer, char* fileContent);
 char* getFile(char* path, int* errcode);
-int sendString(Socket s, char* toWrite);
+int sendString(Socket s, char* toWrite, char* returnCode, int threadID, int resultSize, char* request, struct in_addr clientAddress);
 
 
 
