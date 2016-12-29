@@ -9,12 +9,15 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h> /* gethostbyname */
-#include <pthread.h> 
+#include <pthread.h>
 #include <string.h>
 
 #include "logger.h"
 #include "common.h"
 #include "utils.h"
+
+#ifndef _SERVER_
+#define _SERVER_
 
 #define BUFFER_SIZE 1024
 #define PATH_BUFFER_SIZE 256
@@ -52,6 +55,7 @@
 #define PUBLIC_HTML "/public_html/"
 #define DEFAULT_FILE_NAME "index.html"
 
+#define DEFAULT_RUNNABLE_RETURN_PATH "/tmp/http3502305_"
 
 typedef int Socket;
 typedef struct sockaddr Sockaddr;
@@ -63,29 +67,28 @@ struct HandleClientArgs {
 	int id;
 };
 
+
 Socket initServerSocket(int port);
 int connectionHandler(Socket socket);
 void handleClient(Socket clientSocket, Sockaddr_in clientInfo, int threadID);
 void * thread_handleClient(void * args);
+
 char* parseQuery(char* query, char* request);
+char* getPath(char* requestPath, int* errcode);
+
 char* createAnswer(char* code, char* message);
 char* addArgToAnswer(char* answer, char* argName, char* argValue);
 char* addFileToAnswer(char* answer, char* fileContent);
 char* getFile(char* path, int* errcode);
-int sendString(Socket s, char* toWrite, char* returnCode, int threadID, int resultSize, char* request, struct in_addr clientAddress);
 
+int answerRunnable(Socket socket, char* path, LogInfo * info);
+int answerHTML(Socket socket, char* path, LogInfo * info);
 
+int execRunnable(char* path);
+char* getRunnableResultFileName(pid_t pid);
+int readRunnableResult(char* fname);
 
+void answerError(Socket s, char* toWrite, char* errcode, LogInfo * info);
+int sendString(Socket s, char* toWrite, LogInfo * info);
 
-
-
-
-
-
-
-
-
-
-
-
-
+#endif
