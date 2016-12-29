@@ -236,7 +236,6 @@ char* createAnswer(char* code, char* message) {
 	char* result;
 	int size = (strlen(HTTP_VERSION) + strlen(code) + strlen(message) + 3) * sizeof(char);
 	result = (char *)malloc(size);
-	clearArray(result, size);
 
 	strcat(result, HTTP_VERSION);
 	strcat(result, " ");
@@ -248,7 +247,8 @@ char* createAnswer(char* code, char* message) {
 }
 
 char* addArgToAnswer(char* answer, char* argName, char* argValue) {
-	answer = realloc(answer, (strlen(answer) + strlen(argName) + strlen(argValue) + 3) * sizeof(char));
+	answer = realloc(answer, (strlen(answer) + strlen(argName) + strlen(argValue) + 4) * sizeof(char));
+
 	strcat(answer, "\n");
 	strcat(answer, argName);
 	strcat(answer, ": ");
@@ -266,7 +266,6 @@ char* addFileToAnswer(char* answer, char* fileContent) {
 }
 
 char* getFile(char* path, int* errcode) {
-	char* finalPath;
 	char* result;
 	int fd;
 	struct stat statbuf;
@@ -280,7 +279,6 @@ char* getFile(char* path, int* errcode) {
 		return NULL;
 	}
 
-
 	fd = open(path, O_RDONLY, S_IRUSR);
 
 	if (fd < 0) {
@@ -289,15 +287,16 @@ char* getFile(char* path, int* errcode) {
 		return NULL;
 	}
 
-	if(stat(finalPath, &statbuf) == -1){
+	if(stat(path, &statbuf) == -1){
 		perror("stat");
 		*errcode = 1;
 		return NULL;
 	}
-	size = statbuf.st_size + 1;
+
+	size = statbuf.st_size + sizeof(char);
 	result = malloc(size);
 
-	if ((n = read(fd, result, size-1)) < 0) {
+	if ((n = read(fd, result, size - sizeof(char))) < 0) {
 		perror("read()");
 		*errcode = 1;
 		return NULL;
@@ -317,11 +316,9 @@ char* getPath(char* requestPath, int* errcode) {
 	char finalPath[PATH_BUFFER_SIZE];
 	struct stat statbuf;
 
-
 	strcpy(finalPath, getenv("HOME"));
 	strcat(finalPath, PUBLIC_HTML);
 	strcat(finalPath, requestPath);
-
 
 	//file exists ?
 	if (access(finalPath, F_OK) < 0) {
@@ -329,7 +326,6 @@ char* getPath(char* requestPath, int* errcode) {
 		*errcode = 2;
 		return NULL;
 	}
-
 
 	if(stat(finalPath, &statbuf) == -1){
 		perror("stat");
@@ -348,7 +344,6 @@ char* getPath(char* requestPath, int* errcode) {
 			return NULL;
 		}
 	}
-
 
 	return strdup(finalPath);
 }
@@ -371,7 +366,6 @@ int answerHTML(Socket socket, char* path, LogInfo * info) {
 
 	// XXX Creates bad address on stat. Is stat creating memory corruption ?
 	fileContent = getFile(path, &errcode);
-
 	if (fileContent == NULL) {
 		printf("Can't open requested file\n");
 		if (errcode == 2) {
@@ -389,11 +383,13 @@ int answerHTML(Socket socket, char* path, LogInfo * info) {
 		return -1;
 
 	} else {
+		printf("Generating positive answer...\n");
 		answer = getHTTP_OK();
 		answer = addArgToAnswer(answer, HTTP_ARG_CONTENT_TYPE, HTTP_ARG_TEXT_HTML);
 		answer = addFileToAnswer(answer, fileContent);
 		info->returnCode = HTTP_OK;
 		info->resultSize = strlen(fileContent);
+
 
 		if (sendString(socket, answer, info) < 0)
 			printf("Error while sending answer to client");
@@ -417,7 +413,7 @@ int answerRunnable(Socket socket, char* path, LogInfo * info) {
 
 	if (forkResult != 0) { //Parent
 		resultFileName = getRunnableResultFileName(forkResult);
-		wait();
+		wait(NULL);
 		returnValue = readRunnableResult(resultFileName);
 		printf("%d\n", returnValue);
 

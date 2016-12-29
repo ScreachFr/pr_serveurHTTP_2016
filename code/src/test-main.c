@@ -4,7 +4,6 @@
 #include "../include/server.h"
 
 int main(int argc, char** argv) {
-	/*
 	if (argc < 2){
 		printf("too few args\n");
 		return EXIT_FAILURE;
@@ -30,8 +29,8 @@ int main(int argc, char** argv) {
 	*/
 	/*
 	char* result;
-
-	result = getFile("/");
+	int errcode = 0;
+	result = getFile("/home/alexandre/public_html/index.html", &errcode);
 
 	printf("result : %s\n", result);
 	*/
@@ -47,7 +46,8 @@ int main(int argc, char** argv) {
 	printf("%s\n", test);
 	*/
 	/*
-	char* fileContent = getFile("/");
+	int ret = 0;
+	char* fileContent = getFile("/home/alexandre/public_html/index.html", &ret);
 	char* answer = createAnswer("200", "test");
 
 	answer = addArgToAnswer(answer, "test", "lol");
@@ -59,7 +59,6 @@ int main(int argc, char** argv) {
 	answer = addFileToAnswer(answer, fileContent);
 
 	printf("%s\n", answer);
-	*/
 	/*
 	int errcode = 0;
 	char* path;
@@ -68,12 +67,13 @@ int main(int argc, char** argv) {
 
 	printf("getpath -> %s, errcode -> %d\n", path, errcode);
 	*/
+	/*
 	// char* path = strdup("/home/alexandre/public_html/script.sh");
 	char* path = strdup("/bin/echo test");
 	int result;
 	result = answerRunnable(NULL, path, NULL);
 	printf("%d\n", result);
-
+	*/
 
 	return EXIT_SUCCESS;
 }
