@@ -115,8 +115,7 @@ void handleClient(Socket clientSocket, Sockaddr_in clientInfo, int threadID) {
     lInfo = newLogInfo(asctime(gmtime(&now)), NULL, threadID, NULL, getpid(),
     			clientAddress, 0);
 
-
-	printf("Thread #%d launched.\n", threadID);
+	printf("Incoming connection from %s\n", inet_ntoa(lInfo->clientAddress));
 
 	//Read in stream
 	if ((n = read(clientSocket, buffer, sizeof(buffer) - 1)) < 0) {
@@ -128,27 +127,19 @@ void handleClient(Socket clientSocket, Sockaddr_in clientInfo, int threadID) {
 	getString = (char*)malloc(strlen(buffer) * sizeof(char));
 	strcpy(getString, &buffer);
 
-	printf("received :\n%s\n", getString);
-
 	//Parse request
-	printf("Parsing...\n");
 	parsedPath = parseQuery(getString, &request);
-	printf("Parsing done.\n");
+
 	if (request != NULL)
 		lInfo->request = strdup(request);
 
-	printf("parsedPath : %s\n", parsedPath);
-
 	//Wrong path
 	if (parsedPath == NULL) {
-		printf("Error while parsing query %s\n", getString);
-
 		answer = getHTTP_BAD_REQUEST();
 		answerError(clientSocket, answer, HTTP_BAD_REQUEST, lInfo);
 
 		shutdown(clientSocket, 2);
 		close(clientSocket);
-		printf("done\n");
 
 		return;
 	}
@@ -178,8 +169,6 @@ void handleClient(Socket clientSocket, Sockaddr_in clientInfo, int threadID) {
 	//What kink of file is the user requesting ?
 	fileType = getFileType(finalPath);
 
-	printf("Requested file : %s\n", finalPath);
-
 	switch (fileType) {
 		case TYPE_HTML :
 			answerHTML(clientSocket, finalPath, lInfo);
@@ -191,15 +180,8 @@ void handleClient(Socket clientSocket, Sockaddr_in clientInfo, int threadID) {
 			answer = getHTTP_BAD_REQUEST();
 			answerError(clientSocket, answer, HTTP_BAD_REQUEST, lInfo);
 		break;
-		/*
-		case default :
-			answer = getHTTP_BAD_REQUEST();
-			answerError(clientSocket, answer, HTTP_BAD_REQUEST, lInfo);
-		break;
-		*/
 	}
 
-	printf("done\n");
 }
 
 /*
@@ -232,19 +214,11 @@ char* parseQuery(char* query, char* request) {
 	int lineSize = 0;
 	int getLineSize = 0;
 
-	printf("to tokenize : %s\n", query);
 	lines = tokenize(query, HTTP_HEADER_LINE_DELIM, &lineSize);
-	printf("ok1\n");
 	if (lineSize <= 0)
 		return NULL;
 
-	int i;
-	for (i = 0; i < lineSize; i++) {
-		printf("%s\n", lines[i]);
-	}
-	printf("ok2\n");
 	GETLine = tokenize(lines[0], HTTP_ARGS_DELIM, &getLineSize);
-	printf("ok3\n");
 	if (getLineSize != 3)
 		return NULL;
 
@@ -261,8 +235,6 @@ char* parseQuery(char* query, char* request) {
 	//free(lines);
 	//free(GETLine);
 
-	// printf("path : %s\n", path);
-	// printf("request : %s\n", request);
 	return path;
 }
 
@@ -292,8 +264,8 @@ char* addArgToAnswer(char* answer, char* argName, char* argValue) {
 }
 
 char* addFileToAnswer(char* answer, char* fileContent) {
-	answer = realloc(answer, (strlen(answer) + 2 + strlen(fileContent)) * sizeof(char));
-	strcat(answer, "\n");
+	answer = realloc(answer, (strlen(answer) + 3 + strlen(fileContent)) * sizeof(char));
+	strcat(answer, "\n\n");
 	strcat(answer, fileContent);
 
 	return answer;
@@ -396,9 +368,6 @@ int answerHTML(Socket socket, char* path, LogInfo * info) {
 	char* answer;
 	int errcode = 0;
 
-	printf("Sending html file...\n");
-
-	// XXX Creates bad address on stat. Is stat creating memory corruption ?
 	fileContent = getFile(path, &errcode);
 	if (fileContent == NULL) {
 		printf("Can't open requested file\n");
@@ -417,7 +386,6 @@ int answerHTML(Socket socket, char* path, LogInfo * info) {
 		return -1;
 
 	} else {
-		printf("Generating positive answer...\n");
 		answer = getHTTP_OK();
 		answer = addArgToAnswer(answer, HTTP_ARG_CONTENT_TYPE, HTTP_ARG_TEXT_HTML);
 		answer = addFileToAnswer(answer, fileContent);
@@ -481,7 +449,6 @@ int execRunnable(char* path) {
 	}
 	//TODO Write a file in /tmp to give the execution result to the parent.
 
-	printf("ok\n");
 	return result;
 }
 
