@@ -125,13 +125,15 @@ void handleClient(Socket clientSocket, Sockaddr_in clientInfo, int threadID) {
 	}
 
 	buffer[n] = '\0';
-	getString = buffer;
+	getString = (char*)malloc(strlen(buffer) * sizeof(char));
+	strcpy(getString, &buffer);
 
 	printf("received :\n%s\n", getString);
 
 	//Parse request
+	printf("Parsing...\n");
 	parsedPath = parseQuery(getString, &request);
-
+	printf("Parsing done.\n");
 	if (request != NULL)
 		lInfo->request = strdup(request);
 
@@ -209,7 +211,10 @@ int sendString(Socket s, char* toWrite, LogInfo * info) {
 		perror("send");
 		return -1;
 	}
-
+	if (send(s, "\n\n", sizeof(char) * 2, 0) < 0) {
+		perror("send");
+		return -1;
+	}
 	writeRequestLog(info);
 
 	return 0;
@@ -224,18 +229,22 @@ char* parseQuery(char* query, char* request) {
 	char* path;
 	char** lines;
 	char** GETLine;
-	int lineSize, getLineSize;
+	int lineSize = 0;
+	int getLineSize = 0;
 
-	printf("query : \n%s\n", query);
-
+	printf("to tokenize : %s\n", query);
 	lines = tokenize(query, HTTP_HEADER_LINE_DELIM, &lineSize);
-
+	printf("ok1\n");
 	if (lineSize <= 0)
 		return NULL;
 
-
+	int i;
+	for (i = 0; i < lineSize; i++) {
+		printf("%s\n", lines[i]);
+	}
+	printf("ok2\n");
 	GETLine = tokenize(lines[0], HTTP_ARGS_DELIM, &getLineSize);
-
+	printf("ok3\n");
 	if (getLineSize != 3)
 		return NULL;
 
@@ -252,8 +261,8 @@ char* parseQuery(char* query, char* request) {
 	//free(lines);
 	//free(GETLine);
 
-	printf("path : %s\n", path);
-	printf("request : %s\n", request);
+	// printf("path : %s\n", path);
+	// printf("request : %s\n", request);
 	return path;
 }
 
@@ -418,6 +427,9 @@ int answerHTML(Socket socket, char* path, LogInfo * info) {
 
 		if (sendString(socket, answer, info) < 0)
 			printf("Error while sending answer to client");
+
+		shutdown(socket, 2);
+		close(socket);
 	}
 
 	return 0;

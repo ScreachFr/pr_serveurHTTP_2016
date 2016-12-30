@@ -4,7 +4,6 @@
 #include "../include/server.h"
 
 int main(int argc, char** argv) {
-	/*
 	if (argc < 2){
 		printf("too few args\n");
 		return EXIT_FAILURE;
@@ -18,10 +17,9 @@ int main(int argc, char** argv) {
 
 	printf("s : %d\n", s);
 	connectionHandler(s);
-	*/
 	/*
-	char testString[] = "GET /test/filedeouf/index.html HTTP/1.1\nHost: 127.0.0.1\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0";
-
+	// char* testString = "GET /test/filedeouf/index.html HTTP/1.1\nHost: 127.0.0.1\n";
+	char* testString = "GET / HTTP/1.1\nHost: 127.0.0.1:91\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9;q=0.8\nAccept-Language: en-US,en;q=0.5\nAccept-Encoding: gzip, deflate\nConnection: keep-alive\nUpgrade-Insecure-Requests: 1\nGET / HTTP/1.1\nHost: 127.0.0.1:91\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9;q=0.8\nAccept-Language: en-US,en;q=0.5\nAccept-Encoding: gzip, deflate\nConnection: keep-alive\nUpgrade-Insecure-Requests: 1\nGET / HTTP/1.1\nHost: 127.0.0.1:91\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9;q=0.8\nAccept-Language: en-US,en;q=0.5\nAccept-Encoding: gzip, deflate\nConnection: keep-alive\nUpgrade-Insecure-Requests: 1\nGET / HTTP/1.1\nHost: 127.0.0.1:91\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9;q=0.8\nAccept-Language: en-US,en;q=0.5\nAccept-Encoding: gzip, deflate\nConnection: keep-alive\nUpgrade-Insecure-Requests: 1\n";
 	char* path;
 	char request[REQUEST_BUFFER_SIZE];
 	path = parseQuery(testString, &request);
@@ -75,6 +73,7 @@ int main(int argc, char** argv) {
 	result = answerRunnable(NULL, path, NULL);
 	printf("%d\n", result);
 	*/
+	/*
 	char* toTokenize = "a b c d e f g h i j k ldlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddldddddddddddddddddddddddddddddddddddddddddddddddd m d g g d s s e f f f d d s d f g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d";
 	//char* toTokenize = "a b c d e";
 	char** result;
@@ -86,6 +85,6 @@ int main(int argc, char** argv) {
 	for (i = 0; i < size; i++) {
 		printf("%s\n", result[i]);
 	}
-
+	*/
 	return EXIT_SUCCESS;
 }

@@ -17,6 +17,8 @@ char** tokenize(char* toTokenize, char* delimiters, int * resultSize) {
 	int i = 0;
 	char* toTokenize_safe = strdup(toTokenize);
 
+	// printf("toTokenize_safe : \n%s\n", toTokenize_safe);
+
 	// First tokenization
 	crtToken = strtok(toTokenize_safe, delimiters);
 	//Nothing to tokenize.
@@ -31,7 +33,7 @@ char** tokenize(char* toTokenize, char* delimiters, int * resultSize) {
 	while ((crtToken = strtok(NULL, delimiters)) != NULL) {
 		i++;
 		result = (char**) realloc(result, (i+1) * sizeof(char*));
-		result[i] = (char*)malloc(strlen(crtToken) * sizeof(char));
+		result[i] = (char*)malloc((strlen(crtToken)+1) * sizeof(char));
 		strcpy(result[i], strdup(crtToken));
 	}
 
