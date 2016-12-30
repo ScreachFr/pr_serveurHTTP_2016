@@ -4,6 +4,7 @@
 #include "../include/server.h"
 
 int main(int argc, char** argv) {
+	/*
 	if (argc < 2){
 		printf("too few args\n");
 		return EXIT_FAILURE;
@@ -16,17 +17,17 @@ int main(int argc, char** argv) {
 	s = initServerSocket(port);
 
 	printf("s : %d\n", s);
-
 	connectionHandler(s);
+	*/
 	/*
-	char testString[] = "GET / HTTP/1.1\nHost: 127.0.0.1\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0\n\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0";
+	char testString[] = "GET /test/filedeouf/index.html HTTP/1.1\nHost: 127.0.0.1\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0";
 
 	char* path;
-
-	path = parseQuery(testString);
+	char request[REQUEST_BUFFER_SIZE];
+	path = parseQuery(testString, &request);
 
 	printf("Parsed path : %s\n", path);
-	*/
+	printf("request : %s\n", request);
 	/*
 	char* result;
 	int errcode = 0;
@@ -74,6 +75,11 @@ int main(int argc, char** argv) {
 	result = answerRunnable(NULL, path, NULL);
 	printf("%d\n", result);
 	*/
+	char* toTokenize = "a b c d e f g h i j k ldlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddldddddddddddddddddddddddddddddddddddddddddddddddd m d g g d s s e f f f d d s d f g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d";
+	char** result;
+	int size = 0;
+	result = tokenize(toTokenize, " ", &size);
 
+	printf("size : %d\n", size);
 	return EXIT_SUCCESS;
 }

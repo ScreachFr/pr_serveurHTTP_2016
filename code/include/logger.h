@@ -15,8 +15,8 @@
 
 
 #ifndef _LOGGER_
-
 #define _LOGGER_
+
 #define DEFAULT_LOG_PATH "/tmp/http3502305.log"
 
 pthread_mutex_t logLock;
@@ -33,13 +33,13 @@ typedef struct LogsInfo {
 
 LogInfo * newLogInfo(
 	char* date,
-	char* returnCode, 
-	int threadID, 
+	char* returnCode,
+	int threadID,
 	char* request,
 	pid_t pid,
-	struct in_addr clientAddress, 
+	struct in_addr clientAddress,
 	int resultSize);
-	
+
 int appendLog(char* fname, char* content);
 int writeRequestLog(LogInfo * info);
 

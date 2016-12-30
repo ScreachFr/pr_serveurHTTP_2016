@@ -68,6 +68,7 @@ int connectionHandler(Socket socket) {
 		args->clientInfo = csin;
 		args->id = threadID++;
 
+		//Launching new thread.
 		if (pthread_create(thread, NULL, thread_handleClient, args)) {
 			perror("Error while creating thread");
 			return EXIT_FAILURE;
@@ -79,6 +80,9 @@ int connectionHandler(Socket socket) {
 	return EXIT_SUCCESS;
 }
 
+/*
+ * This function simply converts args and launchs the client handling.
+ */
 void * thread_handleClient(void * args) {
 	struct HandleClientArgs * arguments = (struct HandleClientArgs *) args;
 	Socket clientSocket = arguments->clientSocket;
@@ -90,6 +94,9 @@ void * thread_handleClient(void * args) {
 	return NULL;
 }
 
+/*
+ * Read the input stream, process the incoming request and send an answer.
+ */
 void handleClient(Socket clientSocket, Sockaddr_in clientInfo, int threadID) {
 	char buffer[BUFFER_SIZE];
 	char* getString;
@@ -104,13 +111,14 @@ void handleClient(Socket clientSocket, Sockaddr_in clientInfo, int threadID) {
     LogInfo * lInfo;
     time_t now = time(NULL);
     int fileType;
-
+	//Initialize log information
     lInfo = newLogInfo(asctime(gmtime(&now)), NULL, threadID, NULL, getpid(),
     			clientAddress, 0);
 
 
 	printf("Thread #%d launched.\n", threadID);
 
+	//Read in stream
 	if ((n = read(clientSocket, buffer, sizeof(buffer) - 1)) < 0) {
 		perror("read()");
 		exit(errno);
@@ -121,6 +129,7 @@ void handleClient(Socket clientSocket, Sockaddr_in clientInfo, int threadID) {
 
 	printf("received :\n%s\n", getString);
 
+	//Parse request
 	parsedPath = parseQuery(getString, &request);
 
 	if (request != NULL)
@@ -142,9 +151,10 @@ void handleClient(Socket clientSocket, Sockaddr_in clientInfo, int threadID) {
 		return;
 	}
 
-
+	//Parse the requested path
 	finalPath = getPath(parsedPath, &errcode);
 
+	//Wrong path
 	if (finalPath == NULL) {
 		lInfo->resultSize = 0;
 
@@ -163,7 +173,7 @@ void handleClient(Socket clientSocket, Sockaddr_in clientInfo, int threadID) {
 		return;
 	}
 
-
+	//What kink of file is the user requesting ?
 	fileType = getFileType(finalPath);
 
 	printf("Requested file : %s\n", finalPath);
@@ -190,6 +200,10 @@ void handleClient(Socket clientSocket, Sockaddr_in clientInfo, int threadID) {
 	printf("done\n");
 }
 
+/*
+ * Write a string on a socket. In case of success, this function will
+ * log the message.
+ */
 int sendString(Socket s, char* toWrite, LogInfo * info) {
 	if (send(s, toWrite, strlen(toWrite) * sizeof(char), 0) < 0) {
 		perror("send");
@@ -201,16 +215,25 @@ int sendString(Socket s, char* toWrite, LogInfo * info) {
 	return 0;
 }
 
+/*
+ * This function checks queries validity.
+ * It will returns the requested path and the request in 'char* request' in case
+ * of success. Otherwise this will return NULL.
+ */
 char* parseQuery(char* query, char* request) {
 	char* path;
 	char** lines;
 	char** GETLine;
 	int lineSize, getLineSize;
 
+	printf("query : \n%s\n", query);
+
 	lines = tokenize(query, HTTP_HEADER_LINE_DELIM, &lineSize);
 
 	if (lineSize <= 0)
 		return NULL;
+
+
 	GETLine = tokenize(lines[0], HTTP_ARGS_DELIM, &getLineSize);
 
 	if (getLineSize != 3)
@@ -223,12 +246,14 @@ char* parseQuery(char* query, char* request) {
 
 	path = malloc(strlen(GETLine[1]) * sizeof(char));
 
-	copyString(GETLine[1], path);
-	copyString(lines[0], request);
+	strcpy(path, GETLine[1]);
+	strcpy(request, lines[0]);
+
 	//free(lines);
 	//free(GETLine);
 
 	printf("path : %s\n", path);
+	printf("request : %s\n", request);
 	return path;
 }
 
