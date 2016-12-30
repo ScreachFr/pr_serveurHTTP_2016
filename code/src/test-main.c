@@ -76,10 +76,16 @@ int main(int argc, char** argv) {
 	printf("%d\n", result);
 	*/
 	char* toTokenize = "a b c d e f g h i j k ldlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddlddddddddddddddddddddddddddddddddddddddddddddddddldddddddddddddddddddddddddddddddddddddddddddddddd m d g g d s s e f f f d d s d f g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d g t r d d s s ds d d d f g g r e s s d f gg f d";
+	//char* toTokenize = "a b c d e";
 	char** result;
+	int i;
 	int size = 0;
 	result = tokenize(toTokenize, " ", &size);
 
 	printf("size : %d\n", size);
+	for (i = 0; i < size; i++) {
+		printf("%s\n", result[i]);
+	}
+
 	return EXIT_SUCCESS;
 }

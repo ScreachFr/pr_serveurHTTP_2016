@@ -12,34 +12,32 @@ void copyString(char* src, char* dest) {
 }
 
 char** tokenize(char* toTokenize, char* delimiters, int * resultSize) {
-	char* result[256];
+	char** result;
 	char* crtToken;
 	int i = 0;
 	char* toTokenize_safe = strdup(toTokenize);
 
-	printf("toTokenize_safe : %s\n", toTokenize_safe);
-
+	// First tokenization
 	crtToken = strtok(toTokenize_safe, delimiters);
 	//Nothing to tokenize.
 	if (crtToken == NULL)
 		return NULL;
 
-	printf("malloc...\n");
-
-	result[i] = malloc(strlen(crtToken) * sizeof(char));
+	//Copying first result to final result
+	result = (char**) malloc(sizeof(char*));
+	result[i] = (char*) malloc(strlen(crtToken) * sizeof(char));
 	strcpy(result[i], strdup(crtToken));
-	printf("loop...\n");
+
 	while ((crtToken = strtok(NULL, delimiters)) != NULL) {
 		i++;
-		printf("crtToken : %s\n", crtToken);
+		result = (char**) realloc(result, (i+1) * sizeof(char*));
 		result[i] = (char*)malloc(strlen(crtToken) * sizeof(char));
 		strcpy(result[i], strdup(crtToken));
 	}
 
 	*resultSize = i+1;
 
-	//free(crtToken);
-
+	free(crtToken);
 	return result;
 }
 
