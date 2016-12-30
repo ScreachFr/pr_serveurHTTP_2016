@@ -137,7 +137,6 @@ void handleClient(Socket clientSocket, Sockaddr_in clientInfo, int threadID) {
 	if (parsedPath == NULL) {
 		answer = getHTTP_BAD_REQUEST();
 		answerError(clientSocket, answer, HTTP_BAD_REQUEST, lInfo);
-
 		shutdown(clientSocket, 2);
 		close(clientSocket);
 
@@ -332,7 +331,6 @@ char* getPath(char* requestPath, int* errcode) {
 		*errcode = 2;
 		return NULL;
 	}
-
 	if(stat(finalPath, &statbuf) == -1){
 		perror("stat");
 		*errcode = 1;
@@ -356,9 +354,23 @@ char* getPath(char* requestPath, int* errcode) {
 
 
 void answerError(Socket s, char* toWrite, char* errcode, LogInfo * info) {
+	char* fileContent;
+	char* path;
+	int err = 0;
 	info->returnCode = errcode;
 	info->resultSize = 0;
 
+	if (strcmp(errcode, HTTP_NOT_FOUND) == 0) {
+		path = getPath(HTTP_NOT_FOUND_FILE, &err);
+	} else {
+		path = getPath(HTTP_BAD_REQUEST_FILE, &err);
+	}
+
+	if (path != NULL) {
+		fileContent = getFile(path, &err);
+		toWrite = addArgToAnswer(toWrite, HTTP_ARG_CONTENT_TYPE, HTTP_ARG_TEXT_HTML);
+		toWrite = addFileToAnswer(toWrite, fileContent);
+	}
 	if (sendString(s, toWrite, info) < 0)
 			printf("Error while sending answer to client");
 }

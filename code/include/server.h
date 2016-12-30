@@ -45,6 +45,9 @@
 #define HTTP_FORBIDDEN "403"
 #define HTTP_FORBIDDEN_MSG "Forbidden"
 
+#define HTTP_BAD_REQUEST_FILE ".default_error/400.html"
+#define HTTP_NOT_FOUND_FILE ".default_error/404.html"
+
 #define getHTTP_OK() createAnswer(HTTP_OK, HTTP_OK_MSG)
 #define getHTTP_BAD_REQUEST() createAnswer(HTTP_BAD_REQUEST, HTTP_BAD_REQUEST_MSG)
 #define getHTTP_NOT_FOUND() createAnswer(HTTP_NOT_FOUND, HTTP_NOT_FOUND_MSG)
