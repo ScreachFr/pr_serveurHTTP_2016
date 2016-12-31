@@ -1,4 +1,4 @@
-TARGET = bin/test
+TARGET = bin/laucher.run
 
 CC = gcc -fdiagnostics-color=auto
 LIB = -pthread

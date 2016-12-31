@@ -4,7 +4,6 @@
  * Initialize a server socket.
  */
 Socket initServerSocket(int port) {
-	//Sockaddr_in sin = {0};
 	Sockaddr_in sin;
 	Socket s;
 
@@ -30,7 +29,8 @@ Socket initServerSocket(int port) {
 }
 
 /**
- *
+ * Dispatch connexion request to thread.
+ * socket is the will be the listening socket.
  */
 int connectionHandler(Socket socket) {
 	Sockaddr_in csin;
@@ -40,6 +40,7 @@ int connectionHandler(Socket socket) {
 	struct HandleClientArgs * args;
 	pthread_t * thread;
 
+	//Initialize logs.
 	if (initLog() < 0){
 		printf("Log initialization failed\n");
 		return EXIT_FAILURE;
@@ -186,6 +187,8 @@ void handleClient(Socket clientSocket, Sockaddr_in clientInfo, int threadID) {
 /*
  * Write a string on a socket. In case of success, this function will
  * log the message.
+ * This function must only be used to send a final message. Indeed this will
+ * send "\n\n" to end the current request answer.
  */
 int sendString(Socket s, char* toWrite, LogInfo * info) {
 	if (send(s, toWrite, strlen(toWrite) * sizeof(char), 0) < 0) {
@@ -196,6 +199,7 @@ int sendString(Socket s, char* toWrite, LogInfo * info) {
 		perror("send");
 		return -1;
 	}
+
 	writeRequestLog(info);
 
 	return 0;
@@ -213,14 +217,16 @@ char* parseQuery(char* query, char* request) {
 	int lineSize = 0;
 	int getLineSize = 0;
 
+	//Tokenize query with "\n".
 	lines = tokenize(query, HTTP_HEADER_LINE_DELIM, &lineSize);
 	if (lineSize <= 0)
 		return NULL;
 
+	//Tokenize first line with " ".
 	GETLine = tokenize(lines[0], HTTP_ARGS_DELIM, &getLineSize);
 	if (getLineSize != 3)
 		return NULL;
-
+	//Check if the query is formed like the following : "GET <PATH> HTTP/1.1".
 	if (strlen(GETLine[0]) != HTTP_GET_SIZE && strncmp(GETLine[0], HTTP_GET, HTTP_GET_SIZE) != 0)
 		return NULL;
 	if (strlen(GETLine[2]) != HTTP_VERSION_SIZE && strncmp(GETLine[2], HTTP_VERSION, HTTP_VERSION_SIZE) != 0)
@@ -231,8 +237,8 @@ char* parseQuery(char* query, char* request) {
 	strcpy(path, GETLine[1]);
 	strcpy(request, lines[0]);
 
-	//free(lines);
-	//free(GETLine);
+	free(lines);
+	free(GETLine);
 
 	return path;
 }
@@ -298,16 +304,16 @@ char* getFile(char* path, int* errcode) {
 		return NULL;
 	}
 
-	size = statbuf.st_size + sizeof(char);
-	result = malloc(size);
+	size = statbuf.st_size;
+	result = malloc(size + sizeof(char));
 
-	if ((n = read(fd, result, size - sizeof(char))) < 0) {
+	if ((n = read(fd, result, size)) < 0) {
 		perror("read()");
 		*errcode = 1;
 		return NULL;
 	}
-
-	result[size] = '\0';
+	//TODO check this.
+	result[(size/sizeof(char)) + 1] = '\0';
 
 	return result;
 }
@@ -362,6 +368,8 @@ void answerError(Socket s, char* toWrite, char* errcode, LogInfo * info) {
 
 	if (strcmp(errcode, HTTP_NOT_FOUND) == 0) {
 		path = getPath(HTTP_NOT_FOUND_FILE, &err);
+	} else if (strcmp(errcode, HTTP_BAD_REQUEST) == 0) {
+		path = getPath(HTTP_BAD_REQUEST_FILE, &err);
 	} else {
 		path = getPath(HTTP_BAD_REQUEST_FILE, &err);
 	}
@@ -418,11 +426,10 @@ int answerHTML(Socket socket, char* path, LogInfo * info) {
 
 
 int answerRunnable(Socket socket, char* path, LogInfo * info) {
-	printf("Runnables are not supported yet.\n");
 	pid_t forkResult;
 	int returnValue;
 	char* resultFileName;
-
+	char* answer;
 	if ((forkResult = fork()) < 0) {
 		perror("fork");
 		return -1;
@@ -430,9 +437,29 @@ int answerRunnable(Socket socket, char* path, LogInfo * info) {
 
 	if (forkResult != 0) { //Parent
 		resultFileName = getRunnableResultFileName(forkResult);
+		//TODO use something more reliable with a timeout.
 		wait(NULL);
+
 		returnValue = readRunnableResult(resultFileName);
 		printf("%d\n", returnValue);
+		if (returnValue == 0) {
+			answer = getHTTP_OK();
+			info->returnCode = HTTP_OK;
+			info->resultSize = 0;
+
+			if (sendString(socket, answer, info) < 0)
+				printf("Error while sending answer to client");
+
+			shutdown(socket, 2);
+			close(socket);
+		} else {
+			answer = getHTTP_SERVER_ERROR();
+			answerError(socket, answer, HTTP_SERVER_ERROR, info);
+
+			shutdown(socket, 2);
+			close(socket);
+		}
+
 
 	} else { //Child
 		char toWrite[6];
@@ -447,19 +474,13 @@ int answerRunnable(Socket socket, char* path, LogInfo * info) {
 
 int execRunnable(char* path) {
 	int result;
-	char* newargv[] = {"echo", "Hello", "world!", NULL};
-	char* newenvi[] = {NULL};
+
 	printf("Executing %s\n", path);
-	// if ((result = execve(path, newargv, newenvi)) < 0) {
-	// 	perror("execve");
-	// 	return -1;
-	// }
 
 	if ((result = system(path)) < 0) {
-		perror("execve");
+		perror("system");
 		return -1;
 	}
-	//TODO Write a file in /tmp to give the execution result to the parent.
 
 	return result;
 }
@@ -477,6 +498,11 @@ int readRunnableResult(char* fname) {
 	char* fileContent;
 	if ((fileContent = getFile(fname, &returnCode)) == NULL)
 		return returnCode;
+
+	//The tmp file is not usefull anymore.
+	if (unlink(fname) < 0) {
+		perror("unlink");
+	}
 
 	return atoi(fileContent);
 }

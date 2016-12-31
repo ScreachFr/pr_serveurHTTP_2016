@@ -31,9 +31,9 @@
 #define HTTP_HEADER_LINE_DELIM "\n"
 #define HTTP_ARGS_DELIM " "
 #define HTTP_GET "GET"
-#define HTTP_GET_SIZE 3
+#define HTTP_GET_SIZE 4
 #define HTTP_VERSION "HTTP/1.1"
-#define HTTP_VERSION_SIZE 8
+#define HTTP_VERSION_SIZE 9
 
 #define HTTP_OK "200"
 #define HTTP_OK_MSG "OK"
@@ -45,12 +45,17 @@
 #define HTTP_FORBIDDEN "403"
 #define HTTP_FORBIDDEN_MSG "Forbidden"
 
+#define HTTP_SERVER_ERROR "500"
+#define HTTP_SERVER_ERROR_MSG "Internal Server Error"
+
 #define HTTP_BAD_REQUEST_FILE ".default_error/400.html"
 #define HTTP_NOT_FOUND_FILE ".default_error/404.html"
+#define HTTP_SERVER_ERROR_FILE ".default_error/500.html"
 
 #define getHTTP_OK() createAnswer(HTTP_OK, HTTP_OK_MSG)
 #define getHTTP_BAD_REQUEST() createAnswer(HTTP_BAD_REQUEST, HTTP_BAD_REQUEST_MSG)
 #define getHTTP_NOT_FOUND() createAnswer(HTTP_NOT_FOUND, HTTP_NOT_FOUND_MSG)
+#define getHTTP_SERVER_ERROR() createAnswer(HTTP_SERVER_ERROR, HTTP_SERVER_ERROR_MSG)
 
 #define HTTP_ARG_CONTENT_TYPE "Content-Type"
 #define HTTP_ARG_TEXT_HTML "text/html"
