@@ -279,15 +279,13 @@ char* addFileToAnswer(char* answer, char* fileContent) {
 
 
 
-
-char* getFile (char* path , int* errcode){
-
+char* getFile(char* path , int* errcode){
+    
     char* result;
     int fd;
-    char buffer[SIZE_BUFFER];
-  
     size_t size;
-  
+    struct stat statbuf ;
+    int sizeResult=0;
     
     //file exists ?
     if (access(path, F_OK) < 0) {
@@ -296,67 +294,29 @@ char* getFile (char* path , int* errcode){
         return NULL;
     }
     
-
     if ( (fd=open(path, O_RDONLY, S_IRUSR))< 0) {
         perror("Error while opening file ");
         *errcode = 1;
         return NULL;
     }
     
-    while(size==read(fd, buffer, SIZE_BUFFER)>=0);
+    if(stat(path, &statbuf) == -1){
+        perror("stat");
+        *errcode = 1;
+        return NULL;
+    }
     
-    result=(char*) malloc(sizeof(char)*strlen(buffer));
-    strcpy(result, buffer);
+    sizeResult=(int)statbuf.st_size+1 ;
+    result=(char*)malloc(sizeof(char)*sizeResult);
     
-    return  result ;
+    while(size==read(fd, result, sizeResult)>=0);
+    
+    result[sizeResult-1]='\0';
+    return result ;
 }
 
 
 
-
-/*
-char* getFile(char* path, int* errcode) {
-	char* result;
-	int fd;
-	struct stat statbuf;
-	int size;
-	int n;
-
-	//file exists ?
-	if (access(path, F_OK) < 0) {
-		printf("Requested file does not exist. 1 \n");
-		*errcode = 2;
-		return NULL;
-	}
-
-	fd = open(path, O_RDONLY, S_IRUSR);
-
-	if (fd < 0) {
-		perror("Error while opening file ");
-		*errcode = 1;
-		return NULL;
-	}
-
-	if(stat(path, &statbuf) == -1){
-		perror("stat");
-		*errcode = 1;
-		return NULL;
-	}
-
-	size = statbuf.st_size;
-	result = malloc(size + sizeof(char));
-
-	if ((n = read(fd, result, size)) < 0) {
-		perror("read()");
-		*errcode = 1;
-		return NULL;
-	}
-	//TODO check this.
-	result[(size/sizeof(char)) + 1] = '\0';
-
-	return result;
-}
-*/
 /**
  * errcode :
  *		1 : 400
