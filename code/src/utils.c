@@ -87,3 +87,8 @@ int getFileType(char* path) {
 		return TYPE_UNKOWN;
 	}
 }
+
+
+
+
+

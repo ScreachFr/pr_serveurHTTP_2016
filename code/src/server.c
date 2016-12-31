@@ -276,6 +276,45 @@ char* addFileToAnswer(char* answer, char* fileContent) {
 	return answer;
 }
 
+
+
+
+
+char* getFile (char* path , int* errcode){
+
+    char* result;
+    int fd;
+    char buffer[SIZE_BUFFER];
+  
+    size_t size;
+  
+    
+    //file exists ?
+    if (access(path, F_OK) < 0) {
+        printf("Requested file does not exist. 1 \n");
+        *errcode = 2;
+        return NULL;
+    }
+    
+
+    if ( (fd=open(path, O_RDONLY, S_IRUSR))< 0) {
+        perror("Error while opening file ");
+        *errcode = 1;
+        return NULL;
+    }
+    
+    while(size==read(fd, buffer, SIZE_BUFFER)>=0);
+    
+    result=(char*) malloc(sizeof(char)*strlen(buffer));
+    strcpy(result, buffer);
+    
+    return  result ;
+}
+
+
+
+
+/*
 char* getFile(char* path, int* errcode) {
 	char* result;
 	int fd;
@@ -317,7 +356,7 @@ char* getFile(char* path, int* errcode) {
 
 	return result;
 }
-
+*/
 /**
  * errcode :
  *		1 : 400

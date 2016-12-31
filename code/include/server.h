@@ -67,6 +67,7 @@
 #define DEFAULT_FILE_NAME "index.html"
 
 #define DEFAULT_RUNNABLE_RETURN_PATH "/tmp/http3502305_"
+#define SIZE_BUFFER 2048
 
 typedef int Socket;
 typedef struct sockaddr Sockaddr;
