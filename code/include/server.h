@@ -11,6 +11,7 @@
 #include <netdb.h> /* gethostbyname */
 #include <pthread.h>
 #include <string.h>
+#include <signal.h>
 
 #include "logger.h"
 #include "common.h"
@@ -27,6 +28,8 @@
 #define SOCKET_ERROR -1
 
 #define SIMU_CONNECTIONS 5
+//XXX on debug value
+#define RUNNABLE_TIMEOUT 1
 
 #define HTTP_HEADER_LINE_DELIM "\n"
 #define HTTP_ARGS_DELIM " "

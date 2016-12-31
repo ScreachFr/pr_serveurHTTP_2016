@@ -430,6 +430,17 @@ int answerRunnable(Socket socket, char* path, LogInfo * info) {
 	int returnValue;
 	char* resultFileName;
 	char* answer;
+
+
+	sigset_t set;
+	pid_t pid;
+
+	printf("SIGCHLD is %i\n", SIGCHLD);
+
+	sigemptyset(&set);
+	sigaddset(&set, SIGCHLD);
+	sigprocmask(SIG_BLOCK, &set, NULL);
+
 	if ((forkResult = fork()) < 0) {
 		perror("fork");
 		return -1;
@@ -437,8 +448,34 @@ int answerRunnable(Socket socket, char* path, LogInfo * info) {
 
 	if (forkResult != 0) { //Parent
 		resultFileName = getRunnableResultFileName(forkResult);
-		//TODO use something more reliable with a timeout.
-		wait(NULL);
+		int retCode;
+
+		sigset_t set;
+        pid_t pid;
+
+        printf("SIGCHLD is %i\n", SIGCHLD);
+
+		sigset_t set2;
+		siginfo_t siginfo;
+		struct timespec timeout = {RUNNABLE_TIMEOUT, 0};
+		int signal;
+
+		sigemptyset(&set2);
+		sigaddset(&set2, SIGCHLD);
+
+		//TODO use something more reliable with a timeout. sigtimedwait ?
+		if ((retCode = sigtimedwait(&set2, &siginfo, &timeout)) < 0) {
+			//Timed out
+			if (retCode == EAGAIN) {
+				printf("Child timed out.\n");
+				kill(pid, SIGKILL);
+			} else if (retCode == SIGCHLD){
+				printf("Runnable execution successful.\n");
+			} else {
+				perror("sigtimedwait");
+				return -1;
+			}
+		}
 
 		returnValue = readRunnableResult(resultFileName);
 		printf("%d\n", returnValue);
@@ -467,7 +504,11 @@ int answerRunnable(Socket socket, char* path, LogInfo * info) {
 		returnValue = execRunnable(path);
 		sprintf(toWrite, "%d", returnValue);
 		appendLog(resultFileName, &toWrite);
+		printf("Child's ending.\n");
 	}
+
+
+
 
 	return 0;
 }
