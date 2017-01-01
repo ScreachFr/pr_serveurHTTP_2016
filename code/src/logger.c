@@ -25,7 +25,8 @@ int appendLog(char* fname, char* content) {
 }
 
 int writeRequestLog(LogInfo * info) {
-	int i, size;
+    int i;
+    size_t size;
 
 	char resultSize[15];
 	char threadID[5];
@@ -52,7 +53,7 @@ int writeRequestLog(LogInfo * info) {
 		+ strlen(resultSize) + 8) * sizeof(char);
 	toWrite = malloc(size);
 
-	clearArray(toWrite, size);
+	clearArray(toWrite, (int)size);
 
 	strcat(toWrite, clientIP);
 	strcat(toWrite, " ");

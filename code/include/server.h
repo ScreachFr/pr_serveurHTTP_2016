@@ -1,3 +1,7 @@
+#ifndef _SERVER_
+#define _SERVER_
+
+#define _XOPEN_SOURCE 700
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/types.h>
@@ -17,8 +21,6 @@
 #include "common.h"
 #include "utils.h"
 
-#ifndef _SERVER_
-#define _SERVER_
 
 #define BUFFER_SIZE 1024
 #define PATH_BUFFER_SIZE 1024

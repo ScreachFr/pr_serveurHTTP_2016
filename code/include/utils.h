@@ -1,3 +1,4 @@
+#define _XOPEN_SOURCE 700
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -11,8 +12,6 @@
 #define EXT_HTML "html"
 #define EXT_RUNNABLE "sh"
 
-void copyString(char* src, char* dest);
 char** tokenize(char* toTokenize, char* delimiters, int * resultSize);
-void concatString(char* dest, char* toConcat);
 void clearArray(char* array, int size);
 int getFileType(char* path);

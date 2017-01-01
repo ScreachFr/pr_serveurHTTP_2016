@@ -19,7 +19,7 @@ Socket initServerSocket(int port) {
 	sin.sin_family = AF_INET;
 	sin.sin_port = htons(port);
 
-	if (bind(s, (Sockaddr *) &sin, sizeof(sin)) == SOCKET_ERROR) {
+	if (bind(s, (Sockaddr *)&sin, sizeof(sin)) == SOCKET_ERROR) {
 		perror("bind()");
 		exit(errno);
 	}
@@ -35,7 +35,7 @@ Socket initServerSocket(int port) {
 int connectionHandler(Socket socket) {
 	Sockaddr_in csin;
 	Socket clientSocket;
-	int sinSize = sizeof(csin);
+	socklen_t sinSize = sizeof(csin);
 	int threadID = 0;
 	struct HandleClientArgs * args;
 	pthread_t * thread;
@@ -103,9 +103,9 @@ void handleClient(Socket clientSocket, Sockaddr_in clientInfo, int threadID) {
 	char* getString;
 	char* parsedPath;
 	char* finalPath;
-	int n;
+	ssize_t n;
 	char* answer;
-	char* requestedFile;
+	
 	int errcode = 0;
     char request[REQUEST_BUFFER_SIZE];
     struct in_addr clientAddress = clientInfo.sin_addr;
@@ -126,12 +126,12 @@ void handleClient(Socket clientSocket, Sockaddr_in clientInfo, int threadID) {
 
 	buffer[n] = '\0';
 	getString = (char*)malloc(strlen(buffer) * sizeof(char));
-	strcpy(getString, &buffer);
+	strcpy(getString,buffer);
 
 	//Parse request
-	parsedPath = parseQuery(getString, &request);
+	parsedPath = parseQuery(getString,request);
 
-	if (request != NULL)
+	//if (request != NULL) always true so not necessary
 		lInfo->request = strdup(request);
 
 	//Wrong path
@@ -166,7 +166,7 @@ void handleClient(Socket clientSocket, Sockaddr_in clientInfo, int threadID) {
 		return;
 	}
 
-	//What kink of file is the user requesting ?
+	//What kind of file is the user requesting ?
 	fileType = getFileType(finalPath);
 
 	switch (fileType) {
@@ -232,7 +232,7 @@ char* parseQuery(char* query, char* request) {
 	if (strlen(GETLine[2]) != HTTP_VERSION_SIZE && strncmp(GETLine[2], HTTP_VERSION, HTTP_VERSION_SIZE) != 0)
 		return NULL;
 
-	path = malloc(strlen(GETLine[1]) * sizeof(char));
+	path = (char*)malloc(strlen(GETLine[1]) * sizeof(char));
 
 	strcpy(path, GETLine[1]);
 	strcpy(request, lines[0]);
@@ -245,7 +245,7 @@ char* parseQuery(char* query, char* request) {
 
 char* createAnswer(char* code, char* message) {
 	char* result;
-	int size = (strlen(HTTP_VERSION) + strlen(code) + strlen(message) + 3) * sizeof(char);
+	size_t size = (strlen(HTTP_VERSION) + strlen(code) + strlen(message) + 3) * sizeof(char);
 	result = (char *)malloc(size);
 
 	strcat(result, HTTP_VERSION);
@@ -409,7 +409,7 @@ int answerHTML(Socket socket, char* path, LogInfo * info) {
 		answer = addArgToAnswer(answer, HTTP_ARG_CONTENT_TYPE, HTTP_ARG_TEXT_HTML);
 		answer = addFileToAnswer(answer, fileContent);
 		info->returnCode = HTTP_OK;
-		info->resultSize = strlen(fileContent);
+		info->resultSize = (int)strlen(fileContent);
 
 
 		if (sendString(socket, answer, info) < 0)
@@ -430,7 +430,6 @@ int answerRunnable(Socket socket, char* path, LogInfo * info) {
 	char* resultFileName;
 	char* answer;
 
-
 	sigset_t set;
 	pid_t pid;
 
@@ -449,21 +448,21 @@ int answerRunnable(Socket socket, char* path, LogInfo * info) {
 		resultFileName = getRunnableResultFileName(forkResult);
 		int retCode;
 
-		sigset_t set;
-        pid_t pid;
 
         printf("SIGCHLD is %i\n", SIGCHLD);
 
 		sigset_t set2;
 		siginfo_t siginfo;
 		struct timespec timeout = {RUNNABLE_TIMEOUT, 0};
-		int signal;
+		
 
 		sigemptyset(&set2);
 		sigaddset(&set2, SIGCHLD);
 
+        
 		//TODO use something more reliable with a timeout. sigtimedwait ?
-		if ((retCode = sigtimedwait(&set2, &siginfo, &timeout)) < 0) {
+
+		if ((retCode =sigtimedwait(&set2, &siginfo, &timeout)) < 0) {
 			//Timed out
 			if (retCode == EAGAIN) {
 				printf("Child timed out.\n");
@@ -502,11 +501,9 @@ int answerRunnable(Socket socket, char* path, LogInfo * info) {
 		resultFileName = getRunnableResultFileName(getpid());
 		returnValue = execRunnable(path);
 		sprintf(toWrite, "%d", returnValue);
-		appendLog(resultFileName, &toWrite);
+		appendLog(resultFileName,toWrite);
 		printf("Child's ending.\n");
 	}
-
-
 
 
 	return 0;

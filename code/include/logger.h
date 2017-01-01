@@ -1,3 +1,6 @@
+#ifndef _LOGGER_
+#define _LOGGER_
+#define _XOPEN_SOURCE 700
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/types.h>
@@ -9,13 +12,11 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-
+#include <pthread.h>
 #include "common.h"
 #include "utils.h"
 
 
-#ifndef _LOGGER_
-#define _LOGGER_
 
 #define DEFAULT_LOG_PATH "/tmp/http3502305.log"
 
