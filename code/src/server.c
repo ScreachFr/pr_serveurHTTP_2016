@@ -105,7 +105,7 @@ void handleClient(Socket clientSocket, Sockaddr_in clientInfo, int threadID) {
 	char* finalPath;
 	ssize_t n;
 	char* answer;
-	
+
 	int errcode = 0;
     char request[REQUEST_BUFFER_SIZE];
     struct in_addr clientAddress = clientInfo.sin_addr;
@@ -280,37 +280,37 @@ char* addFileToAnswer(char* answer, char* fileContent) {
 
 
 char* getFile(char* path , int* errcode){
-    
+
     char* result;
     int fd;
     size_t size;
     struct stat statbuf ;
     int sizeResult=0;
-    
+
     //file exists ?
     if (access(path, F_OK) < 0) {
         printf("Requested file does not exist. 1 \n");
         *errcode = 2;
         return NULL;
     }
-    
+
     if ( (fd=open(path, O_RDONLY, S_IRUSR))< 0) {
         perror("Error while opening file ");
         *errcode = 1;
         return NULL;
     }
-    
+
     if(stat(path, &statbuf) == -1){
         perror("stat");
         *errcode = 1;
         return NULL;
     }
-    
+
     sizeResult=(int)statbuf.st_size+1 ;
     result=(char*)malloc(sizeof(char)*sizeResult);
-    
+
     while(size==read(fd, result, sizeResult)>=0);
-    
+
     result[sizeResult-1]='\0';
     return result ;
 }
@@ -454,12 +454,12 @@ int answerRunnable(Socket socket, char* path, LogInfo * info) {
 		sigset_t set2;
 		siginfo_t siginfo;
 		struct timespec timeout = {RUNNABLE_TIMEOUT, 0};
-		
+
 
 		sigemptyset(&set2);
 		sigaddset(&set2, SIGCHLD);
 
-        
+
 		//TODO use something more reliable with a timeout. sigtimedwait ?
 
 		if ((retCode =sigtimedwait(&set2, &siginfo, &timeout)) < 0) {
@@ -471,10 +471,8 @@ int answerRunnable(Socket socket, char* path, LogInfo * info) {
 				printf("Runnable execution successful.\n");
 			} else {
 				perror("sigtimedwait");
-				return -1;
 			}
 		}
-
 		returnValue = readRunnableResult(resultFileName);
 		printf("%d\n", returnValue);
 		if (returnValue == 0) {
@@ -523,7 +521,7 @@ int execRunnable(char* path) {
 }
 
 char* getRunnableResultFileName(pid_t pid) {
-	char* result[23];
+	char result[23];
 
 	sprintf(result, "%s%d", DEFAULT_RUNNABLE_RETURN_PATH, pid);
 
