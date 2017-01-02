@@ -30,8 +30,7 @@
 #define SOCKET_ERROR -1
 
 #define SIMU_CONNECTIONS 5
-//XXX on debug value
-#define RUNNABLE_TIMEOUT 1
+#define RUNNABLE_TIMEOUT 10
 
 #define HTTP_HEADER_LINE_DELIM "\n"
 #define HTTP_ARGS_DELIM " "
