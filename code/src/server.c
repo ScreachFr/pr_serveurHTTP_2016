@@ -119,7 +119,7 @@ void handleClient(Socket clientSocket, Sockaddr_in clientInfo, int threadID) {
 	printf("Incoming connection from %s\n", inet_ntoa(lInfo->clientAddress));
 
 	//Read in stream
-	if ((n = read(clientSocket, buffer, sizeof(buffer) - 1)) < 0) {
+	if ((n = read(clientSocket, buffer, BUFFER_SIZE)) < 0) {
 		perror("read()");
 		exit(errno);
 	}
